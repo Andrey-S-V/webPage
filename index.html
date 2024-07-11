@@ -2,13 +2,63 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Coins to Money</title>
+    <title>Web App</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        #main {
+            text-align: center;
+            margin-top: 50px;
+        }
+        img {
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+        }
+    </style>
 </head>
 <body>
     <div id="main">
-        <h1>Coins to Money</h1>
-        <p>Are you ready to changed your coins?</p>
+        <h1 id="user-name">Coins to Money</h1>
+        <p id="user-text">Are you ready to change your coins?</p>
+        <img id="user-avatar" src="" alt="User Avatar" style="display: none;">
         <button id="change">Changed</button>
     </div>
+
+    <script>
+        function getQueryParams() {
+            const params = {};
+            window.location.search.substring(1).split('&').forEach(param => {
+                const [key, value] = param.split('=');
+                params[key] = decodeURIComponent(value);
+            });
+            return params;
+        }
+
+        window.onload = function() {
+            const params = getQueryParams();
+            if (params.user_name) {
+                document.getElementById('user-name').innerText = params.user_name;
+                document.getElementById('user-text').innerText = `Hello, ${params.user_name}! Are you ready to change your coins?`;
+            }
+
+            if (params.user_id) {
+                const avatarUrl = `https://api.telegram.org/bot<your-bot-token>/getUserProfilePhotos?user_id=${params.user_id}`;
+                fetch(avatarUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.result && data.result.photos && data.result.photos.length > 0) {
+                            const photo = data.result.photos[0][0].file_id;
+                            const fileUrl = `https://api.telegram.org/file/bot<your-bot-token>/${photo}`;
+                            document.getElementById('user-avatar').src = fileUrl;
+                            document.getElementById('user-avatar').style.display = 'block';
+                        }
+                    });
+            }
+        };
+    </script>
 </body>
 </html>
