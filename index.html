@@ -46,13 +46,13 @@
             }
 
             if (params.user_id) {
-                const avatarUrl = `https://api.telegram.org/bot<your-bot-token>/getUserProfilePhotos?user_id=${params.user_id}`;
+                const avatarUrl = `https://api.telegram.org/bot<7254348988:AAEC-VsdhGA8CfxrxM9I90bkMzYS1HsEv_E>/getUserProfilePhotos?user_id=${params.user_id}`;
                 fetch(avatarUrl)
                     .then(response => response.json())
                     .then(data => {
                         if (data.result && data.result.photos && data.result.photos.length > 0) {
                             const photo = data.result.photos[0][0].file_id;
-                            const fileUrl = `https://api.telegram.org/file/bot<your-bot-token>/${photo}`;
+                            const fileUrl = `https://api.telegram.org/file/bot<7254348988:AAEC-VsdhGA8CfxrxM9I90bkMzYS1HsEv_E>/${photo}`;
                             document.getElementById('user-avatar').src = fileUrl;
                             document.getElementById('user-avatar').style.display = 'block';
                         }
