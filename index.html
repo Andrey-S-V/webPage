@@ -111,6 +111,9 @@
             const walletAddress = params.get('address');
 
             if (walletAddress) {
+                const shortenedAddress = `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
+                document.getElementById('connect-wallet').innerText = shortenedAddress;
+
                 fetch(`https://tonapi.io/v1/accounts/${walletAddress}/balances`)
                     .then(response => response.json())
                     .then(data => {
