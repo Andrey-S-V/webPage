@@ -101,9 +101,10 @@
 
     <script>
         document.getElementById('connect-wallet').addEventListener('click', async function() {
-            const tonkeeperUrl = 'https://app.tonkeeper.com/connect';
-            const deepLink = `${tonkeeperUrl}?dapp=${encodeURIComponent(window.location.href)}`;
-            window.location.href = deepLink;
+        const tonkeeperUrl = 'https://app.tonkeeper.com/connect';
+        const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
+        const deepLink = `${tonkeeperUrl}?dapp=${encodeURIComponent(window.location.href)}&redirect_uri=${redirectUri}`;
+        window.location.href = deepLink;
         });
 
         function handleWalletConnection() {
@@ -167,5 +168,5 @@
             document.getElementById('result').innerText = `You will receive ${result.toFixed(2)} USD`;
         }
     </script>
-</body>
+</body> 
 </html>
