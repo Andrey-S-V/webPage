@@ -53,10 +53,10 @@
             -webkit-appearance: none;
             margin: 0;
         }
-        #calculate {
+        #calculate, #connect-wallet {
             background-color: black;
             color: white;
-            border: 2px solid white; /* белая обводка */
+            border: 2px solid white;
             cursor: pointer;
             padding: 10px 20px;
             border-radius: 8px;
@@ -64,7 +64,7 @@
             width: 100%;
             box-sizing: border-box;
         }
-        #calculate:hover {
+        #calculate:hover, #connect-wallet:hover {
             background-color: #333;
             color: white;
         }
@@ -84,13 +84,11 @@
         <p id="user-text">Are you ready to change your coins?</p>
         <img id="user-avatar" src="" alt="User Avatar" style="display: none;">
         <br>
+        <button id="connect-wallet">Connect Tonkeeper Wallet</button>
         <div class="left-align">
             <label for="coin-select">Choose a coin:</label>
             <select id="coin-select">
-                <option value="blum">Blum</option>
-                <option value="hmstr">HMSTR</option>
-                <option value="tapswap">TapSwap</option>
-                <option value="dogs">DOGS</option>
+                <!-- Монеты будут добавлены динамически -->
             </select>
             <br>
             <label for="amount-input">Enter amount:</label>
@@ -102,35 +100,40 @@
     </div>
 
     <script>
-        function getQueryParams() {
-            const params = {};
-            window.location.search.substring(1).split('&').forEach(param => {
-                const [key, value] = param.split('=');
-                params[key] = decodeURIComponent(value);
-            });
-            return params;
+        document.getElementById('connect-wallet').addEventListener('click', async function() {
+            const tonkeeperUrl = 'https://app.tonkeeper.com/connect';
+            const deepLink = `${tonkeeperUrl}?dapp=${encodeURIComponent(window.location.href)}`;
+            window.location.href = deepLink;
+        });
+
+        function handleWalletConnection() {
+            const params = new URLSearchParams(window.location.search);
+            const walletAddress = params.get('address');
+
+            if (walletAddress) {
+                fetch(`https://tonapi.io/v1/accounts/${walletAddress}/balances`)
+                    .then(response => response.json())
+                    .then(data => {
+                        populateCoins(data.balances);
+                    })
+                    .catch(error => console.error('Error fetching wallet balances:', error));
+            }
+        }
+
+        function populateCoins(balances) {
+            const coinSelect = document.getElementById('coin-select');
+            coinSelect.innerHTML = '';
+
+            for (const coin of balances) {
+                const option = document.createElement('option');
+                option.value = coin.token;
+                option.text = `${coin.token} (${coin.amount} available)`;
+                coinSelect.appendChild(option);
+            }
         }
 
         window.onload = function() {
-            const params = getQueryParams();
-            if (params.user_name) {
-                document.getElementById('user-name').innerText = params.user_name;
-                document.getElementById('user-text').innerText = `Hello! Are you ready to change your coins?`;
-            }
-
-            if (params.user_id) {
-                const avatarUrl = `https://api.telegram.org/bot<7254348988:AAEC-VsdhGA8CfxrxM9I90bkMzYS1HsEv_E>/getUserProfilePhotos?user_id=${params.user_id}`;
-                fetch(avatarUrl)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.result && data.result.photos && data.result.photos.length > 0) {
-                            const photo = data.result.photos[0][0].file_id;
-                            const fileUrl = `https://api.telegram.org/file/bot<7254348988:AAEC-VsdhGA8CfxrxM9I90bkMzYS1HsEv_E>/${photo}`;
-                            document.getElementById('user-avatar').src = fileUrl;
-                            document.getElementById('user-avatar').style.display = 'block';
-                        }
-                    });
-            }
+            handleWalletConnection();
 
             document.getElementById('calculate').addEventListener('click', calculate);
         };
