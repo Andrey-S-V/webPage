@@ -101,11 +101,12 @@
 
     <script>
         document.getElementById('connect-wallet').addEventListener('click', async function() {
-        const tonkeeperUrl = 'https://app.tonkeeper.com/connect';
-        const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
-        const deepLink = `${tonkeeperUrl}?dapp=${encodeURIComponent(window.location.href)}&redirect_uri=${redirectUri}`;
-        window.location.href = deepLink;
-        });
+  const tonkeeperUrl = 'https://app.tonkeeper.com/connect';
+  const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
+  const dappName = 'Coins to Money'; // Add your dApp name here
+  const deepLink = `${tonkeeperUrl}?dapp=${encodeURIComponent(dappName)}&redirect_uri=${redirectUri}`;
+  window.location.href = deepLink;
+});
 
         function handleWalletConnection() {
             const params = new URLSearchParams(window.location.search);
@@ -168,5 +169,5 @@
             document.getElementById('result').innerText = `You will receive ${result.toFixed(2)} USD`;
         }
     </script>
-</body> 
+</body>
 </html>
