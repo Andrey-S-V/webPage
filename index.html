@@ -2,21 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web App</title>
     <style>
         body {
             background-color: black;
             color: white;
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
         }
         #main {
             text-align: center;
-            margin: 50px auto;
-            max-width: 90%;
+            margin-top: 50px;
         }
         img {
             border-radius: 50%;
@@ -24,15 +19,13 @@
             height: 100px;
         }
         select, input[type="number"], button {
-            margin: 10px 0;
-            padding: 12px 15px;
+            margin: 10px;
+            padding: 8px 15px;
             font-size: 16px;
             border: 1px solid #ccc;
             border-radius: 4px;
             background-color: #333;
             color: white;
-            width: 100%;
-            box-sizing: border-box;
         }
         select {
             appearance: none;
@@ -53,18 +46,16 @@
             -webkit-appearance: none;
             margin: 0;
         }
-        #calculate, #connect-wallet {
+        #calculate {
             background-color: black;
             color: white;
-            border: 2px solid white;
+            border: 2px solid white; /* белая обводка */
             cursor: pointer;
             padding: 10px 20px;
             border-radius: 8px;
             font-size: 16px;
-            width: 100%;
-            box-sizing: border-box;
         }
-        #calculate:hover, #connect-wallet:hover {
+        #calculate:hover {
             background-color: #333;
             color: white;
         }
@@ -74,7 +65,7 @@
         }
         .left-align {
             text-align: left;
-            margin: 20px 0;
+            margin-left: 20px; /* Небольшой отступ слева */
         }
     </style>
 </head>
@@ -84,11 +75,14 @@
         <p id="user-text">Are you ready to change your coins?</p>
         <img id="user-avatar" src="" alt="User Avatar" style="display: none;">
         <br>
-        <button id="connect-wallet">Connect Tonkeeper Wallet</button>
         <div class="left-align">
             <label for="coin-select">Choose a coin:</label>
             <select id="coin-select">
-                <!-- Монеты будут добавлены динамически -->
+                <option value="blum">Blum</option>
+                <option value="hmstr">HMSTR</option>
+                <option value="tapswap">TapSwap</option>
+                <option value="dogs">DOGS</option>
+
             </select>
             <br>
             <label for="amount-input">Enter amount:</label>
@@ -98,56 +92,40 @@
         <button id="calculate">Calculate</button>
         <p id="result"></p>
     </div>
-
     <script>
-        document.getElementById('connect-wallet').addEventListener('click', async function() {
-  const tonkeeperUrl = 'https://app.tonkeeper.com/connect';
-  const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
-  const dappName = 'Coins to Money'; // Add your dApp name here
-  const deepLink = `${tonkeeperUrl}?dapp=${encodeURIComponent(dappName)}&redirect_uri=${redirectUri}`;
-  window.location.href = deepLink;
-});
-
-        function handleWalletConnection() {
-            const params = new URLSearchParams(window.location.search);
-            const walletAddress = params.get('address');
-
-            if (walletAddress) {
-                const shortenedAddress = `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
-                document.getElementById('connect-wallet').innerText = shortenedAddress;
-
-                fetch(`https://tonapi.io/v1/accounts/${walletAddress}/balances`)
+        function getQueryParams() {
+            const params = {};
+            window.location.search.substring(1).split('&').forEach(param => {
+                const [key, value] = param.split('=');
+                params[key] = decodeURIComponent(value);
+            });
+            return params;
+        }
+        window.onload = function() {
+            const params = getQueryParams();
+            if (params.user_name) {
+                document.getElementById('user-name').innerText = params.user_name;
+                document.getElementById('user-text').innerText = `Hello! Are you ready to change your coins?`;
+            }
+            if (params.user_id) {
+                const avatarUrl = `https://api.telegram.org/bot<7254348988:AAEC-VsdhGA8CfxrxM9I90bkMzYS1HsEv_E>/getUserProfilePhotos?user_id=${params.user_id}`;
+                fetch(avatarUrl)
                     .then(response => response.json())
                     .then(data => {
-                        populateCoins(data.balances);
-                    })
-                    .catch(error => console.error('Error fetching wallet balances:', error));
+                        if (data.result && data.result.photos && data.result.photos.length > 0) {
+                            const photo = data.result.photos[0][0].file_id;
+                            const fileUrl = `https://api.telegram.org/file/bot<7254348988:AAEC-VsdhGA8CfxrxM9I90bkMzYS1HsEv_E>/${photo}`;
+                            document.getElementById('user-avatar').src = fileUrl;
+                            document.getElementById('user-avatar').style.display = 'block';
+                        }
+                    });
             }
-        }
-
-        function populateCoins(balances) {
-            const coinSelect = document.getElementById('coin-select');
-            coinSelect.innerHTML = '';
-
-            for (const coin of balances) {
-                const option = document.createElement('option');
-                option.value = coin.token;
-                option.text = `${coin.token} (${coin.amount} available)`;
-                coinSelect.appendChild(option);
-            }
-        }
-
-        window.onload = function() {
-            handleWalletConnection();
-
             document.getElementById('calculate').addEventListener('click', calculate);
         };
-
         function calculate() {
             const coin = document.getElementById('coin-select').value;
             const amount = parseFloat(document.getElementById('amount-input').value);
             let price;
-
             switch (coin) {
                 case 'blum':
                     price = 0.5;
@@ -159,12 +137,11 @@
                     price = 0.4;
                     break;
                 case 'dogs':
-                    price = 0.002;
+                    price = 0.00104;
                     break;
                 default:
                     price = 0;
             }
-
             const result = amount * price;
             document.getElementById('result').innerText = `You will receive ${result.toFixed(2)} USD`;
         }
