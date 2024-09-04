@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web App</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        #background-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        #main {
+            text-align: center;
+            margin: 50px auto;
+            max-width: 90%;
+            position: relative;
+            z-index: 1;
+        }
+        img {
+            width: 80vw; /* 80% от ширины окна */
+            max-width: 600px; /* Максимальная ширина 600px */
+            height: 300px;
+            object-fit: contain;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .slide {
+            display: none;
+        }
+        .slide.active {
+            display: block;
+        }
+        #next-button, #copy-button {
+            background-color: black;
+            color: white;
+            border: 2px solid white;
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        #next-button:hover, #copy-button:hover {
+            background-color: #333;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="background-canvas"></canvas>
+    <div id="main">
+        <h1 id="user-name">Как совершить транзакцию:</h1>
+        <div class="slide active">
+            <img src="IMG_1.PNG" alt="Photo 1">
+            <p>1) Выбираем монету, которую собираемся продавать ☑️</p>
+        </div>
+        <div class="slide">
+            <img src="IMG_2.PNG" alt="Photo 2">
+            <p>2) Сканируем или копируем адрес ☑️</p>
+        </div>
+        <div class="slide">
+            <img src="IMG_3.PNG" alt="Photo 3">
+            <p>3) Вставляем адрес, который принимаем транзакции ☑️</p>
+        </div>
+        <div class="slide">
+            <img src="IMG_4.PNG" alt="Photo 4">
+            <p>4) Нажимаем "Продолжить" ☑️</p>
+        </div>
+        <button id="next-button">Далее ➡️</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('background-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const dots = [];
+
+        class Dot {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2;
+                this.speedX = Math.random() * 2 - 1;
+                this.speedY = Math.random() * 2 - 1;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x > canvas.width) this.x = 0;
+                if (this.x < 0) this.x = canvas.width;
+                if (this.y > canvas.height) this.y = 0;
+                if (this.y < 0) this.y = canvas.height;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = 'white';
+                ctx.fill();
+            }
+        }
+
+        function init() {
+            for (let i = 0; i < 100; i++) {
+                dots.push(new Dot());
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            dots.forEach(dot => {
+                dot.update();
+                dot.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+
+        init();
+        animate();
+
+        const slides = document.querySelectorAll('.slide');
+        let currentSlide = 0;
+
+        document.getElementById('next-button').addEventListener('click', function() {
+            if (currentSlide === slides.length - 1) {
+                // Redirect to the new page if on the last slide
+                window.location.href = 'index_finish.html';
+            } else {
+                // Move to the next slide
+                slides[currentSlide].classList.remove('active');
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].classList.add('active');
+            }
+        });
+
+        document.getElementById('copy-button').addEventListener('click', function() {
+            const address = 'UQCXv4rGYagqK6aM0wo6jFXGr4108VUU9bdahDEJ2hQc1G3Z';
+            navigator.clipboard.writeText(address).then(() => {
+                alert('Адрес скопирован в буфер обмена');
+            }, (err) => {
+                console.error('Не удалось скопировать текст: ', err);
+            });
+        });
+    </script>
+</body>
+</html>
